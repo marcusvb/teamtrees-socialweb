@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import numpy as np
 
 sns.set()
 
@@ -34,8 +35,19 @@ def get_donation_data():
 
     return df
 
+def get_tweet_count_data(timeunit):
+    df = pd.read_csv('data/twitter_data/count_' + 'per_' + timeunit + '_tweets.csv', delimiter="	", header=0)
+    return df
+
+
+def calc_correlation(social_data, donation_data):
+    covariance = np.cov(social_data, donation_data['rate_of_funding'])[0][1]
+    return covariance
+
+
 
 tweet_df = get_tweet_data()
+tweets_per_day = get_tweet_count_data('day')
 donation_df = get_donation_data()
 
 plt.bar(donation_df['date'], donation_df['raised_capital'])
@@ -60,3 +72,7 @@ ax2.tick_params(axis='y', labelcolor=color)
 
 fig.tight_layout()
 plt.show()
+
+'''Doesn't work at the moment as the datasets need to be of the same size (so per day)'''
+# calculate covariance of tweets per day and rate of funding
+# print(calc_correlation(tweets_per_day, donation_df))
