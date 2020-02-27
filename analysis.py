@@ -35,9 +35,13 @@ def get_donation_data():
     return df
 
 
-
 tweet_df = get_tweet_data()
 donation_df = get_donation_data()
+
+plt.bar(donation_df['date'], donation_df['raised_capital'])
+plt.xlabel("Date")
+plt.ylabel("Raised capital ($)")
+plt.show()
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('date')
