@@ -16,7 +16,6 @@ def get_tweet_data():
 
     return df
 
-
 def get_donation_data():
     df = pd.read_csv("data/donation_data/team-tree-donation-data.csv", delimiter="	", header=0)
     df['date'] = pd.to_datetime(df['date'], format='%m/%d/%Y %H:%M:%S %p')
@@ -36,24 +35,32 @@ def get_donation_data():
     return df
 
 def get_tweet_count_data(timeunit):
-    df = pd.read_csv('data/twitter_data/count_' + 'per_' + timeunit + '_tweets.csv', delimiter="	", header=0)
+    df = pd.read_csv('data/twitter_data/count_' + 'per_' + timeunit + '_tweets.csv', delimiter=",", header=0)
+    return df
+
+def get_donation_rate_data(timeunit):
+    df = pd.read_csv('data/donation_data/av_rate_' + 'per_' + timeunit + '_donations.csv', delimiter=",", header=0)
     return df
 
 
-def calc_correlation(social_data, donation_data):
-    covariance = np.cov(social_data, donation_data['rate_of_funding'])[0][1]
-    return covariance
+def calc_correlation(social_data, donation_data, begin_date, end_date):
+    period = (social_data['date'] > begin_date) & (social_data['date'] <= end_date)
+    correlation = np.corrcoef(social_data.loc[period]['count'], donation_data.loc[period]['av_rate'])
+    return correlation
 
 
-
+# get data in raw form
 tweet_df = get_tweet_data()
-tweets_per_day = get_tweet_count_data('day')
 donation_df = get_donation_data()
 
+# read in data per time unit
+tweets_per_day = get_tweet_count_data('day')
+av_donation_rate_per_day = get_donation_rate_data('day')
+
+# plots
 plt.bar(donation_df['date'], donation_df['raised_capital'])
 plt.xlabel("Date")
 plt.ylabel("Raised capital ($)")
-plt.show()
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('date')
@@ -75,4 +82,6 @@ plt.show()
 
 '''Doesn't work at the moment as the datasets need to be of the same size (so per day)'''
 # calculate covariance of tweets per day and rate of funding
-# print(calc_correlation(tweets_per_day, donation_df))
+start_date = '2019-10-25'
+end_date = '2020-02-03'
+print(calc_correlation(tweets_per_day, av_donation_rate_per_day, start_date, end_date))
