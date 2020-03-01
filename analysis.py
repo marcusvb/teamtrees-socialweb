@@ -13,14 +13,31 @@ sns.set()
 def get_tweet_data():
     df = pd.read_csv("data/twitter_data/tweets.csv", delimiter=";", header=0)
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
-
     return df
 
-def get_donation_data(secondly=False):
+def get_donation_data(secondly=True):
     # Read the 10s donation data from the website
+    # Src: https://vps.natur-kultur.eu/trees.html
     if secondly:
         df = pd.read_csv("data/donation_data/team-trees-10second.csv", delimiter=",", header=0)
         df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['raised_capital'] = (df['amount']/20000000)*100
+
+        rate_of_fundings = [0]
+        for i in range(0, len(df['date'])-1):
+            current_date = df['date'].values[i]
+            current_capital = df['amount'].values[i]
+
+            next_date = df['date'].values[i+1]
+            next_capital = df['amount'].values[i+1]
+
+            time_diff = (next_date-current_date).total_seconds()
+            delta_diff = next_capital - current_capital
+
+            min_rate = (delta_diff/time_diff)*60
+            rate_of_fundings.append(min_rate)
+
+        df['rate_of_funding'] = rate_of_fundings
         return df
 
     # Read old data-set a couple of hours per tweet
