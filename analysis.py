@@ -16,23 +16,30 @@ def get_tweet_data():
 
     return df
 
-def get_donation_data():
-    df = pd.read_csv("data/donation_data/team-tree-donation-data.csv", delimiter="	", header=0)
-    df['date'] = pd.to_datetime(df['date'], format='%m/%d/%Y %H:%M:%S %p')
+def get_donation_data(secondly=False):
+    # Read the 10s donation data from the website
+    if secondly:
+        df = pd.read_csv("data/donation_data/team-trees-10second.csv", delimiter=",", header=0)
+        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        return df
 
-    # Cleanup rate of funding
-    df['rate_of_funding'] = df['rate_of_funding'].str.replace("?", "0")
-    df['rate_of_funding'] = df['rate_of_funding'].str.replace("/min", "")
-    df["rate_of_funding"] = pd.to_numeric(df["rate_of_funding"])
-    # df["rate_of_funding"] = df["rate_of_funding"]/df["rate_of_funding"].max() # scale rate funding between 0 and 1
+    # Read old data-set a couple of hours per tweet
+    else:
+        df = pd.read_csv("data/donation_data/team-tree-donation-data.csv", delimiter="	", header=0)
+        df['date'] = pd.to_datetime(df['date'], format='%m/%d/%Y %H:%M:%S %p')
 
-    # Cleanup donation amount
-    df['raised_capital'] = df['raised_capital'].str.replace("$", "")
-    df['raised_capital'] = df['raised_capital'].str.replace(",", "")
-    df['raised_capital'] = df['raised_capital'].str.replace("/min", "")
-    df["raised_capital"] = pd.to_numeric(df["raised_capital"])
+        # Cleanup rate of funding
+        df['rate_of_funding'] = df['rate_of_funding'].str.replace("?", "0")
+        df['rate_of_funding'] = df['rate_of_funding'].str.replace("/min", "")
+        df["rate_of_funding"] = pd.to_numeric(df["rate_of_funding"])
+        # df["rate_of_funding"] = df["rate_of_funding"]/df["rate_of_funding"].max() # scale rate funding between 0 and 1
 
-    return df
+        # Cleanup donation amount
+        df['raised_capital'] = df['raised_capital'].str.replace("$", "")
+        df['raised_capital'] = df['raised_capital'].str.replace(",", "")
+        df['raised_capital'] = df['raised_capital'].str.replace("/min", "")
+        df["raised_capital"] = pd.to_numeric(df["raised_capital"])
+        return df
 
 def get_tweet_count_data(timeunit):
     df = pd.read_csv('data/twitter_data/count_' + 'per_' + timeunit + '_tweets.csv', delimiter=",", header=0)
