@@ -15,48 +15,29 @@ def get_tweet_data():
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
     return df
 
-def get_donation_data(secondly=True):
+def get_donation_data():
     # Read the 10s donation data from the website
     # Src: https://vps.natur-kultur.eu/trees.html
-    if secondly:
-        df = pd.read_csv("data/donation_data/team-trees-10second.csv", delimiter=",", header=0)
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
-        df['raised_capital'] = (df['amount']/20000000)*100
+    df = pd.read_csv("data/donation_data/team-trees-10second.csv", delimiter=",", header=0)
+    df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+    df['raised_capital'] = (df['amount']/20000000)*100
 
-        rate_of_fundings = [0]
-        for i in range(0, len(df['date'])-1):
-            current_date = df['date'].values[i]
-            current_capital = df['amount'].values[i]
+    rate_of_fundings = [0]
+    for i in range(0, len(df['date'])-1):
+        current_date = df['date'].values[i]
+        current_capital = df['amount'].values[i]
 
-            next_date = df['date'].values[i+1]
-            next_capital = df['amount'].values[i+1]
+        next_date = df['date'].values[i+1]
+        next_capital = df['amount'].values[i+1]
 
-            time_diff = (next_date-current_date).total_seconds()
-            delta_diff = next_capital - current_capital
+        time_diff = (next_date-current_date).total_seconds()
+        delta_diff = next_capital - current_capital
 
-            min_rate = (delta_diff/time_diff)*60
-            rate_of_fundings.append(min_rate)
+        min_rate = (delta_diff/time_diff)*60
+        rate_of_fundings.append(min_rate)
 
-        df['rate_of_funding'] = rate_of_fundings
-        return df
-
-    # Read old data-set a couple of hours per tweet
-    else:
-        df = pd.read_csv("data/donation_data/team-tree-donation-data.csv", delimiter="	", header=0)
-        df['date'] = pd.to_datetime(df['date'], format='%m/%d/%Y %H:%M:%S %p')
-
-        # Cleanup rate of funding
-        df['rate_of_funding'] = df['rate_of_funding'].str.replace("?", "0")
-        df['rate_of_funding'] = df['rate_of_funding'].str.replace("/min", "")
-        df["rate_of_funding"] = pd.to_numeric(df["rate_of_funding"])
-        # df["rate_of_funding"] = df["rate_of_funding"]/df["rate_of_funding"].max() # scale rate funding between 0 and 1
-
-        # Cleanup donation amount
-        df['raised_capital'] = df['raised_capital'].str.replace("$", "")
-        df['raised_capital'] = df['raised_capital'].str.replace(",", "")
-        df['raised_capital'] = df['raised_capital'].str.replace("/min", "")
-        df["raised_capital"] = pd.to_numeric(df["raised_capital"])
-        return df
+    df['rate_of_funding'] = rate_of_fundings
+    return df
 
 def get_tweet_count_data(timeunit):
     df = pd.read_csv('data/twitter_data/count_' + 'per_' + timeunit + '_tweets.csv', delimiter=",", header=0)
@@ -71,6 +52,20 @@ def calc_correlation(social_data, donation_data, begin_date, end_date):
     period = (social_data['date'] > begin_date) & (social_data['date'] <= end_date)
     correlation = np.corrcoef(social_data.loc[period]['count'], donation_data.loc[period]['av_rate'])
     return correlation
+
+def ready_donation_for_bar(donation_df):
+    skip = 1000
+    dates = donation_df['date'].values
+    raised = donation_df['rate_of_funding'].values
+    new_dates = []
+    new_raised = []
+
+    for i in range(0, len(dates)):
+        if i % skip == 0:
+            new_dates.append(dates[i])
+            new_raised.append(raised[i])
+
+    return new_dates, new_raised
 
 
 # get data in raw form
