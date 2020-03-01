@@ -15,6 +15,7 @@ def get_tweet_data():
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
     return df
 
+
 def get_donation_data():
     # Read the 10s donation data from the website
     # Src: https://vps.natur-kultur.eu/trees.html
@@ -39,9 +40,11 @@ def get_donation_data():
     df['rate_of_funding'] = rate_of_fundings
     return df
 
+
 def get_tweet_count_data(timeunit):
     df = pd.read_csv('data/twitter_data/count_' + 'per_' + timeunit + '_tweets.csv', delimiter=",", header=0)
     return df
+
 
 def get_donation_rate_data(timeunit):
     df = pd.read_csv('data/donation_data/av_rate_' + 'per_' + timeunit + '_donations.csv', delimiter=",", header=0)
@@ -52,20 +55,6 @@ def calc_correlation(social_data, donation_data, begin_date, end_date):
     period = (social_data['date'] > begin_date) & (social_data['date'] <= end_date)
     correlation = np.corrcoef(social_data.loc[period]['count'], donation_data.loc[period]['av_rate'])
     return correlation
-
-def ready_donation_for_bar(donation_df):
-    skip = 1000
-    dates = donation_df['date'].values
-    raised = donation_df['rate_of_funding'].values
-    new_dates = []
-    new_raised = []
-
-    for i in range(0, len(dates)):
-        if i % skip == 0:
-            new_dates.append(dates[i])
-            new_raised.append(raised[i])
-
-    return new_dates, new_raised
 
 
 # get data in raw form
