@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import numpy as np
+import matplotlib.dates as mdates
+from scipy.optimize import curve_fit
 
 sns.set()
 
@@ -94,7 +96,7 @@ def get_correlation_data():
     print(calc_correlation(tweets_per_day, av_donation_rate_per_day, start_date, end_date))
 
 
-def catagorize_donation_amounts(donation_df):
+def catagorize_donation_amounts(donation_df, compare_log_model=False):
     # pop the first 11 rows which are not per 10s
     SKIP = 11
 
@@ -116,17 +118,43 @@ def catagorize_donation_amounts(donation_df):
     binned = merged.groupby(['bin'])
 
     # Get the donors in highest interval
-    TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999,)
+    TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999)
     top_donor_data = binned.get_group(TOP_DONORS_INTERVAL)
 
-    for high_donation_date in top_donor_data['date']:
-        plt.axvline(high_donation_date)
+    def func(x, a, b, c):
+        return a * np.log(b * x) + c
 
-    sns.lineplot(x="date", y="cumsum", hue="bin", data=merged)
-    plt.yscale('log')
-    plt.show()
+
+    if compare_log_model:
+        indexes = top_donor_data.index
+        filtered_no_top_donors = merged.drop(labels=indexes, axis=0)
+        filtered_no_top_donors['cumsum'] = filtered_no_top_donors['donated_amount'].cumsum()
+
+        y_data = filtered_no_top_donors['cumsum']
+        x_dates = mdates.date2num(filtered_no_top_donors['date'])
+
+        log_x_data = np.log(x_dates)
+        log_y_data = np.log(y_data)
+
+        [a, b] = np.polyfit(x_dates, log_y_data, 1)
+
+        y_fitted = np.exp(a) * np.exp(b * x_dates)
+
+        plt.plot(x_dates, y_fitted, label="fitted line")
+        plt.plot(x_dates, y_data, linestyle="--", label="real data")
+        plt.legend()
+        plt.show()
+
+    else:
+        for high_donation_date in top_donor_data['date']:
+            plt.axvline(high_donation_date)
+
+        sns.lineplot(x="date", y="cumsum", hue="bin", data=merged)
+        plt.yscale('log')
+        plt.show()
 
 # get data in raw form
 tweet_df = get_tweet_data()
 donation_df = get_donation_data()
 
+# catagorize_donation_amounts(donation_df, compare_log_model=True)
