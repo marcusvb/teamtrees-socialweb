@@ -57,39 +57,76 @@ def calc_correlation(social_data, donation_data, begin_date, end_date):
     return correlation
 
 
+def plot_data(tweet_df, donation_df):
+    # read in data per time unit
+
+    # plots
+    plt.bar(donation_df['date'], donation_df['raised_capital'])
+    plt.xlabel("Date")
+    plt.ylabel("Raised capital ($)")
+
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('date')
+
+    color = 'tab:red'
+    ax1.set_ylabel('Frequency of tweets', color=color)
+    plt.hist(tweet_df['date'], alpha=0.5, color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    color = 'tab:blue'
+    ax2.set_ylabel('rate of funding', color=color)  # we already handled the x-label with ax1
+    plt.bar(donation_df['date'], donation_df['rate_of_funding'], alpha=1, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    fig.tight_layout()
+    plt.show()
+
+def get_correlation_data():
+    tweets_per_day = get_tweet_count_data('day')
+    av_donation_rate_per_day = get_donation_rate_data('day')
+
+    '''Doesn't work at the moment as the datasets need to be of the same size (so per day)'''
+    # calculate covariance of tweets per day and rate of funding
+    start_date = '2019-10-25'
+    end_date = '2020-02-03'
+    print(calc_correlation(tweets_per_day, av_donation_rate_per_day, start_date, end_date))
+
+
+def catagorize_donation_amounts(donation_df):
+    # pop the first 11 rows which are not per 10s
+    SKIP = 11
+
+    # donation catagories
+    bins = [0, 100, 5000, 50000, 9999999999]
+
+    data_dates = donation_df['date'].iloc[SKIP:]
+    donation_data_delta = donation_df.diff(periods=1, axis=0)
+    donation_data_delta = donation_data_delta.iloc[SKIP:]['amount']
+
+    merged = pd.concat([data_dates, donation_data_delta], axis=1, keys=['date', 'donated_amount'])
+
+    # Bin the donations
+    merged['bin'] = pd.cut(x=merged['donated_amount'], bins=bins)
+    # cumsum the bins
+    merged['cumsum'] = merged.groupby('bin')['donated_amount'].cumsum()
+
+    # Group the tweets per catagory for v-lines
+    binned = merged.groupby(['bin'])
+
+    # Get the donors in highest interval
+    TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999,)
+    top_donor_data = binned.get_group(TOP_DONORS_INTERVAL)
+
+    for high_donation_date in top_donor_data['date']:
+        plt.axvline(high_donation_date)
+
+    sns.lineplot(x="date", y="cumsum", hue="bin", data=merged)
+    plt.yscale('log')
+    plt.show()
+
 # get data in raw form
 tweet_df = get_tweet_data()
 donation_df = get_donation_data()
 
-# read in data per time unit
-tweets_per_day = get_tweet_count_data('day')
-av_donation_rate_per_day = get_donation_rate_data('day')
-
-# plots
-plt.bar(donation_df['date'], donation_df['raised_capital'])
-plt.xlabel("Date")
-plt.ylabel("Raised capital ($)")
-
-fig, ax1 = plt.subplots()
-ax1.set_xlabel('date')
-
-color = 'tab:red'
-ax1.set_ylabel('Frequency of tweets', color=color)
-plt.hist(tweet_df['date'], alpha=0.5, color=color)
-ax1.tick_params(axis='y', labelcolor=color)
-
-ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-
-color = 'tab:blue'
-ax2.set_ylabel('rate of funding', color=color)  # we already handled the x-label with ax1
-plt.bar(donation_df['date'], donation_df['rate_of_funding'], alpha=1, color=color)
-ax2.tick_params(axis='y', labelcolor=color)
-
-fig.tight_layout()
-plt.show()
-
-'''Doesn't work at the moment as the datasets need to be of the same size (so per day)'''
-# calculate covariance of tweets per day and rate of funding
-start_date = '2019-10-25'
-end_date = '2020-02-03'
-print(calc_correlation(tweets_per_day, av_donation_rate_per_day, start_date, end_date))
