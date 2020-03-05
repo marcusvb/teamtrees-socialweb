@@ -100,13 +100,14 @@ def fit_log_model_analysis(donation_df):
     def logFunc(x, a, b):
         return a + b * np.log(x)
 
+    # Split the donations into amounts, and add a cumsum column
     donation_data_delta = donation_df.diff(periods=1, axis=0)
     donation_df['amount'] = donation_data_delta['amount']
     donation_df['cumsum'] = donation_df['amount'].cumsum()
 
+    # Out Y data is all but the first cumsum as it's nan
     y_data = donation_df['cumsum'].to_numpy()[1:]
 
-    print(y_data)
 
     # special date scaling... day 0 starts at 1, so instead of large numbers we normalize to the data and to make logarithm happy
     x_dates = mdates.date2num(donation_df['date'])
@@ -185,6 +186,6 @@ tweet_df = get_tweet_data()
 donation_df = get_donation_data()
 
 
-fit_log_model_analysis(donation_df)
+# fit_log_model_analysis(donation_df)
 
-catagorize_donation_amounts(donation_df)
+# catagorize_donation_amounts(donation_df)
