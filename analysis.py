@@ -121,28 +121,71 @@ def catagorize_donation_amounts(donation_df, compare_log_model=False):
     TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999)
     top_donor_data = binned.get_group(TOP_DONORS_INTERVAL)
 
-    def func(x, a, b, c):
-        return a * np.log(b * x) + c
+    # def log_func(x, a, b, c):
+    #     return a * x + b * np.power(x, 2) + c
 
+    def logFunc(x, a, b):
+        return a + b * np.log(x)
+
+    def logFit(x, y):
+        # cache some frequently reused terms
+        sumy = np.sum(y)
+        sumlogx = np.sum(np.log(x))
+
+        b = (x.size * np.sum(y * np.log(x)) - sumy * sumlogx) / (x.size * np.sum(np.log(x) ** 2) - sumlogx ** 2)
+        a = (sumy - b * sumlogx) / x.size
+
+        return a, b
+
+    def NormalizeData(data):
+        return (data - np.min(data)) / (np.max(data) - np.min(data))
 
     if compare_log_model:
         indexes = top_donor_data.index
         filtered_no_top_donors = merged.drop(labels=indexes, axis=0)
         filtered_no_top_donors['cumsum'] = filtered_no_top_donors['donated_amount'].cumsum()
 
-        y_data = filtered_no_top_donors['cumsum']
+        y_data = filtered_no_top_donors['cumsum'].to_numpy()
+        y_data = NormalizeData(y_data)
+
+        # Keep the dates for the ticking
         x_dates = mdates.date2num(filtered_no_top_donors['date'])
+        x_dates = x_dates - (x_dates[0]-1) # day 0 starts at 1, so instead of large numbers we normalize to the data
+        # x_dates = NormalizeData(x_dates)
 
-        log_x_data = np.log(x_dates)
-        log_y_data = np.log(y_data)
+        # fit to around december 2019, to see the campaign progress
+        small_x_data = x_dates[0:4000]
+        small_y_data = y_data[0:4000]
 
-        [a, b] = np.polyfit(x_dates, log_y_data, 1)
+        print("xdata")
+        print(small_x_data)
+        print("ydata")
+        print(small_y_data)
 
-        y_fitted = np.exp(a) * np.exp(b * x_dates)
+        # popt, _ = curve_fit(log_func, small_x_data, small_y_data)
 
-        plt.plot(x_dates, y_fitted, label="fitted line")
-        plt.plot(x_dates, y_data, linestyle="--", label="real data")
+        fig, ax1 = plt.subplots()
+
+        color = 'tab:red'
+        ax1.set_xlabel('date')
+        ax1.set_ylabel('cumulative donations (scaled)', color=color)
+        ax1.tick_params(axis='y', labelcolor=color)
+        ax1.tick_params(axis='x', labelcolor=color)
+        ax1.plot(x_dates, logFunc(x_dates, *logFit(small_x_data, small_y_data)))
+        # ax1.plot(x_dates[2:], log_func(x_dates[2:], *popt), label="fitted line")
         plt.legend()
+
+        ax2 = ax1.twinx().twiny()
+
+        color = 'tab:blue'
+        ax2.set_xlabel('date')
+        ax2.set_ylabel('cumulative donations', color=color)
+        ax2.plot(filtered_no_top_donors['date'], filtered_no_top_donors['cumsum'], linestyle="--", label="real data", color=color)
+        ax2.tick_params(axis='y', labelcolor=color)
+        ax2.tick_params(axis='x', labelcolor=color)
+
+        plt.legend()
+        # plt.savefig("done.pdf")
         plt.show()
 
     else:
@@ -157,4 +200,4 @@ def catagorize_donation_amounts(donation_df, compare_log_model=False):
 tweet_df = get_tweet_data()
 donation_df = get_donation_data()
 
-# catagorize_donation_amounts(donation_df, compare_log_model=True)
+catagorize_donation_amounts(donation_df, compare_log_model=True)
