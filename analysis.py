@@ -12,6 +12,7 @@ sns.set()
 # pd.set_option('display.max_columns', 500)
 # pd.set_option('display.width', 150)
 
+
 def get_tweet_data():
     df = pd.read_csv("data/twitter_data/tweets.csv", delimiter=";", header=0)
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
@@ -85,6 +86,7 @@ def plot_data(tweet_df, donation_df):
     fig.tight_layout()
     plt.show()
 
+
 def get_correlation_data():
     tweets_per_day = get_tweet_count_data('day')
     av_donation_rate_per_day = get_donation_rate_data('day')
@@ -119,33 +121,28 @@ def fit_log_model_analysis(donation_df):
     small_y_data = y_data[0:30500]
     popt, _ = curve_fit(logFunc, small_x_data, small_y_data)
 
-    fig, ax1 = plt.subplots()
-
-    color = 'tab:red'
-    ax1.set_xlabel('date')
-    ax1.set_ylabel('cumulative donations (scaled)', color=color)
-    ax1.tick_params(axis='y', labelcolor=color)
-    ax1.tick_params(axis='x', labelcolor=color)
-    ax1.plot(x_dates, logFunc(x_dates, *popt), label="Log model prediction based on donation data till 1-12-19")
-
-    plt.legend()
-
-    ax2 = ax1.twinx().twiny()
+    fig, ax0 = plt.subplots()
 
     color = 'tab:blue'
-    ax2.set_xlabel('date')
-    ax2.set_ylabel('cumulative donations', color=color)
-    ax2.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color=color)
-    ax2.tick_params(axis='y', labelcolor=color)
-    ax2.tick_params(axis='x', labelcolor=color)
+    ax0.set_xlabel('date')
+    ax0.set_ylabel('cumulative donations', color=color)
+    ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color=color)
+    ax0.tick_params(axis='y', labelcolor=color)
+    ax0.tick_params(axis='x', labelcolor=color)
+    ax0.axhline(20000000, label="20mil goal", color="yellow")
+    ax0.legend(loc=1)
 
-    # Goal donation amount
-    ax2.axhline(20000000, label="20mil goal", color="yellow")
+    # Dual graphs on 1 axis
+    ax1 = ax0.twinx().twiny()
 
-    plt.legend()
-    # plt.savefig("done.pdf")
+    ax1.axvline(small_x_data[-1], label="Boundary for prediction data", color="red")
+    ax1.set_yticks([])
+    ax1.set_xticks([])
+    ax1.plot(x_dates, logFunc(x_dates, *popt), label="Log model prediction based on donation data till 1-12-19")
+
+    ax1.legend(loc=0)
+
     plt.show()
-
 
 
 def catagorize_donation_amounts(donation_df):
@@ -185,7 +182,5 @@ def catagorize_donation_amounts(donation_df):
 tweet_df = get_tweet_data()
 donation_df = get_donation_data()
 
-
 # fit_log_model_analysis(donation_df)
-
 # catagorize_donation_amounts(donation_df)
