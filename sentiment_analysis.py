@@ -60,13 +60,12 @@ def get_sentiments_trends(file):
     count_df.to_csv('data/twitter_data/count_sentiment_' + 'per_day_tweets.csv', header=True)
 
 
+tweet_df = get_tweet_data()
+get_sentiment(tweet_df)
 
-# tweet_df = get_tweet_data()
-# get_sentiment(tweet_df)
-
-# get_sentiments_trends('data/twitter_data/sentiment_of_tweets.csv')
-df = pd.read_csv('data/twitter_data/count_sentiment_per_day_tweets.csv', delimiter=",", header=0)
-
-df['n_positive'].plot()
-df['n_negative'].plot()
-plt.show()
+get_sentiments_trends('data/twitter_data/sentiment_of_tweets.csv')
+# df = pd.read_csv('data/twitter_data/count_sentiment_per_day_tweets.csv', delimiter=",", header=0)
+#
+# df['n_positive'].plot()
+# df['n_negative'].plot()
+# plt.show()

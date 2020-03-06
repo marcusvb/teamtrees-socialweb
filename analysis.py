@@ -54,9 +54,13 @@ def get_donation_rate_data(timeunit):
     return df
 
 
-def calc_correlation(social_data, donation_data, begin_date, end_date):
+def calc_correlation(social_data, donation_data, begin_date, end_date, sentiment):
     period = (social_data['date'] > begin_date) & (social_data['date'] <= end_date)
-    correlation = np.corrcoef(social_data.loc[period]['count'], donation_data.loc[period]['av_rate'])
+
+    if not sentiment:
+        correlation = np.corrcoef(social_data.loc[period]['count'], donation_data.loc[period]['av_rate'])
+    else:
+        correlation = np.corrcoef(social_data.loc[period]['n_positive'], donation_data.loc[period]['av_rate'])
     return correlation
 
 
@@ -87,15 +91,18 @@ def plot_data(tweet_df, donation_df):
     plt.show()
 
 
-def get_correlation_data():
-    tweets_per_day = get_tweet_count_data('day')
+def get_correlation_data(sentiment):
+    if not sentiment:
+        tweets_per_day = get_tweet_count_data('day')
+    else:
+        tweets_per_day = pd.read_csv('data/twitter_data/count_sentiment_per_day_tweets.csv', delimiter=",", header=0)
+
     av_donation_rate_per_day = get_donation_rate_data('day')
 
-    '''Doesn't work at the moment as the datasets need to be of the same size (so per day)'''
     # calculate covariance of tweets per day and rate of funding
     start_date = '2019-10-25'
     end_date = '2020-02-03'
-    print(calc_correlation(tweets_per_day, av_donation_rate_per_day, start_date, end_date))
+    print(calc_correlation(tweets_per_day, av_donation_rate_per_day, start_date, end_date, sentiment))
 
 
 def fit_log_model_analysis(donation_df):
@@ -178,9 +185,11 @@ def catagorize_donation_amounts(donation_df):
     plt.yscale('log')
     plt.show()
 
-# get data in raw form
-tweet_df = get_tweet_data()
-donation_df = get_donation_data()
+# # get data in raw form
+# tweet_df = get_tweet_data()
+# donation_df = get_donation_data()
+
+get_correlation_data(True)
 
 # fit_log_model_analysis(donation_df)
 # catagorize_donation_amounts(donation_df)
