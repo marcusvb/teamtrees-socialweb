@@ -55,12 +55,13 @@ def get_donation_rate_data(timeunit):
 
 
 def calc_correlation(social_data, donation_data, begin_date, end_date, sentiment):
-    period = (social_data['date'] > begin_date) & (social_data['date'] <= end_date)
+    period_social = (social_data['date'] > begin_date) & (social_data['date'] <= end_date)
+    period_donation = (donation_data['date'] > begin_date) & (donation_data['date'] <= end_date)
 
     if not sentiment:
-        correlation = np.corrcoef(social_data.loc[period]['count'], donation_data.loc[period]['av_rate'])
+        correlation = np.corrcoef(social_data.loc[period_social]['count'], donation_data.loc[period_donation]['av_rate'])
     else:
-        correlation = np.corrcoef(social_data.loc[period]['n_positive'], donation_data.loc[period]['av_rate'])
+        correlation = np.corrcoef(social_data.loc[period_social]['n_positive'], donation_data.loc[period_donation]['av_rate'])
     return correlation
 
 
@@ -91,13 +92,23 @@ def plot_data(tweet_df, donation_df):
     plt.show()
 
 
-def get_correlation_data(sentiment):
-    if not sentiment:
-        tweets_per_day = get_tweet_count_data('day')
+def get_correlation_data(file1='regular_twitter_data', file2='donation_rate_data', sentiment=False):
+    if isinstance(file1, str):
+        if file1 == 'regular_twitter_data':
+            tweets_per_day = get_tweet_count_data('day')
+        else:
+            tweets_per_day = pd.read_csv(file1, delimiter=",", header=0)
     else:
-        tweets_per_day = pd.read_csv('data/twitter_data/count_sentiment_per_day_tweets.csv', delimiter=",", header=0)
+        tweets_per_day = file1
 
-    av_donation_rate_per_day = get_donation_rate_data('day')
+    if isinstance(file2, str):
+        if file2 == 'donation_rate_data':
+            av_donation_rate_per_day = get_donation_rate_data('day')
+        else:
+            av_donation_rate_per_day = pd.read_csv(file2, delimiter=",", header=0)
+    else:
+        av_donation_rate_per_day = file2
+
 
     # calculate covariance of tweets per day and rate of funding
     start_date = '2019-10-25'
@@ -189,7 +200,8 @@ def catagorize_donation_amounts(donation_df):
 # tweet_df = get_tweet_data()
 # donation_df = get_donation_data()
 
-get_correlation_data(True)
+#get_correlation_data('data/twitter_data/count_sentiment_per_day_tweets.csv')
+#get_correlation_data()
 
 # fit_log_model_analysis(donation_df)
 # catagorize_donation_amounts(donation_df)

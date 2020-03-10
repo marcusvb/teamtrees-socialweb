@@ -35,7 +35,7 @@ def get_sentiments_trends(file):
     count_df = pd.DataFrame(columns=['date', 'count', 'n_positive', 'neutral', 'n_negative'])
 
     for year in [2019, 2020]:
-        for month in range(1, 12):
+        for month in range(1, 13):
             for day in range(1, days_per_month[month - 1] + 1):
                 print(year, month, day)
                 count_df.loc[0 if pd.isnull(count_df.index.max()) else count_df.index.max() + 1] = \

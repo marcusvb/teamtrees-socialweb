@@ -4,7 +4,7 @@ import datetime
 import math
 import matplotlib.pyplot as plt
 
-days_per_month = [31, 2, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 def tweet_count_per_unit(df, group_per_timeunit):
     df.drop(["retweets", "favorites",  "text", "geo", "mentions", "hashtags", "id", "permalink"], axis=1)
@@ -12,7 +12,7 @@ def tweet_count_per_unit(df, group_per_timeunit):
 
     if group_per_timeunit == "day":
         for year in [2019, 2020]:
-            for month in range(1, 12):
+            for month in range(1, 13):
                 for day in range(1, days_per_month[month-1]+1):
                     print(year, month, day)
                     count_df.loc[0 if pd.isnull(count_df.index.max()) else count_df.index.max() + 1] = \
@@ -41,12 +41,17 @@ def tweet_count_per_unit(df, group_per_timeunit):
 
 
 def tree_donation_rate_per_unit(df, group_per_timeunit):
-    df.drop(["percent_of_goal", "raised_capital", "predicted_goal_reach","predicted_campaign_end"], axis=1)
+    df = pd.read_csv("data/donation_data/team-tree-donation-data.csv", delimiter="\t", header=0)
+    df['rate_of_funding'] = df['rate_of_funding'].apply(lambda x: float(x.strip('/min')))
+    print(df['rate_of_funding'].head())
+    df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+
+    # df.drop(["percent_of_goal", "raised_capital", "predicted_goal_reach","predicted_campaign_end"], axis=1)
     av_rate_df = pd.DataFrame(columns=['date', 'av_rate'])
 
     if group_per_timeunit == "day":
         for year in [2019, 2020]:
-            for month in range(1, 12):
+            for month in range(1, 13):
                 for day in range(1, days_per_month[month-1]+1):
                     print(year, month, day)
                     mean = df.loc[(df['date'].dt.day == day) &
@@ -84,13 +89,13 @@ def tree_donation_rate_per_unit(df, group_per_timeunit):
 
     return av_rate_df
 
-# tweet_df = get_tweet_data()
-donation_df = get_donation_data()
+tweet_df = get_tweet_data()
+#donation_df = get_donation_data()
 
-# count_df = tweet_count_per_unit(tweet_df, "day")
-donation_rate_df = tree_donation_rate_per_unit(donation_df, 'day')
+count_df = tweet_count_per_unit(tweet_df, "day")
+#donation_rate_df = tree_donation_rate_per_unit(donation_df, 'day')
 
-# count_df.plot(x='date', y='count')
-donation_rate_df.plot(x='date', y='av_rate')
+count_df.plot(x='date', y='count')
+#donation_rate_df.plot(x='date', y='av_rate')
 
 plt.show()
