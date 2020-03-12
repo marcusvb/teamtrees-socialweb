@@ -18,12 +18,19 @@ def get_tweet_data():
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
     return df
 
-
 def get_donation_data():
+    df = pd.read_csv('data/donation_data/parsed-team-trees-10second.csv', header=0)
+    df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+    return df
+
+def parse_donation_data():
     # Read the 10s donation data from the website
     # Src: https://vps.natur-kultur.eu/trees.html
     df = pd.read_csv("data/donation_data/team-trees-10second.csv", delimiter=",", header=0)
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+    print(df["date"])
+    df['date'] = df['date'].apply(lambda x: x.replace(tzinfo=None))
+    print(df['date'])
     df['raised_capital'] = (df['amount']/20000000)*100
 
     rate_of_fundings = [0]
@@ -34,13 +41,16 @@ def get_donation_data():
         next_date = df['date'].values[i+1]
         next_capital = df['amount'].values[i+1]
 
-        time_diff = (next_date-current_date).total_seconds()
+        time_diff = (next_date-current_date) / np.timedelta64(1, 's')
         delta_diff = next_capital - current_capital
 
         min_rate = (delta_diff/time_diff)*60
         rate_of_fundings.append(min_rate)
 
     df['rate_of_funding'] = rate_of_fundings
+
+    df.to_csv('data/donation_data/parsed-team-trees-10second.csv', header=True)
+
     return df
 
 
@@ -202,7 +212,7 @@ def catagorize_donation_amounts(donation_df):
 #get_correlation_data('data/twitter_data/count_sentiment_per_day_tweets.csv')
 #get_correlation_data()
 
-
+parse_donation_data()
 
 # fit_log_model_analysis(donation_df)
 # catagorize_donation_amounts(donation_df)

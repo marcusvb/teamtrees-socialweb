@@ -27,8 +27,10 @@ print(google_df.loc[period_google]['date'])
 print(tweet_df.loc[period_social]['date'])
 print(donation_df.loc[period_social]['date'])
 
-
-plt.plot(google_df.loc[period_google]['Day'], google_df['count']*100,  label='google')
+plt.figure()
+plt.xlabel("Date")
+plt.ylabel("Rate (a.u.)")
+plt.plot(google_df.loc[period_google]['Day'], google_df['count']*100,  label='google trends')
 plt.plot(tweet_df.loc[period_social]['date'], tweet_df.loc[period_social]['count'],  label='tweet count')
 plt.plot(donation_df.loc[period_social]['date'], donation_df.loc[period_social]['av_rate']*3,  label='donations')
 plt.legend()
