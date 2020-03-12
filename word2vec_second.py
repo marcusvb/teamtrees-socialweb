@@ -6,6 +6,11 @@ import csv
 import pandas as pd
 from nltk.corpus import stopwords
 
+
+import nltk
+nltk.download('stopwords')
+
+
 regex = re.compile('[%s]' % re.escape(string.punctuation))
 cachedStopWords = stopwords.words('english')
 
@@ -271,10 +276,10 @@ if __name__ == '__main__':
     tweetstotal = pre_process_tweets(data_url)
     print(len(tweetstotal))
 
-    for i in range(12):
-        i=i+12
-        tweets = tweetstotal[i*10000:(i+1)*10000]
-
+    for i in range(2):
+        i=i
+        tweets = tweetstotal[i*60000:(i+1)*60000]
+    # tweets = tweetstotal
         # default number of experiments to be performed
         experiments = 1
 
@@ -294,7 +299,7 @@ if __name__ == '__main__':
                 print(str(c+1) + ": ", str(len(clusters[c])) + " tweets")
                 # # to print tweets in a cluster
                 for t in range(len(clusters[c])):
-                    with open('clusterfile120_130k', 'a') as fp:
+                    with open('clusterfile', 'a') as fp:
                         wr = csv.writer(fp)
 
                         wr.writerow([c, (" ".join(clusters[c][t][0]))])
