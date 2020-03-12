@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="VcsDirectoryMappings">
-    <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/GetOldTweets-python" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Jaccard-K-Means" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/tweet-clustering" vcs="Git" />
-  </component>
-</project>
