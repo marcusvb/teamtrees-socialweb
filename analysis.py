@@ -18,12 +18,19 @@ def get_tweet_data():
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
     return df
 
-
 def get_donation_data():
+    df = pd.read_csv('data/donation_data/parsed-team-trees-10second.csv', header=0)
+    df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+    return df
+
+def parse_donation_data():
     # Read the 10s donation data from the website
     # Src: https://vps.natur-kultur.eu/trees.html
     df = pd.read_csv("data/donation_data/team-trees-10second.csv", delimiter=",", header=0)
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+    print(df["date"])
+    df['date'] = df['date'].apply(lambda x: x.replace(tzinfo=None))
+    print(df['date'])
     df['raised_capital'] = (df['amount']/20000000)*100
 
     rate_of_fundings = [0]
@@ -34,13 +41,16 @@ def get_donation_data():
         next_date = df['date'].values[i+1]
         next_capital = df['amount'].values[i+1]
 
-        time_diff = (next_date-current_date).total_seconds()
+        time_diff = (next_date-current_date) / np.timedelta64(1, 's')
         delta_diff = next_capital - current_capital
 
         min_rate = (delta_diff/time_diff)*60
         rate_of_fundings.append(min_rate)
 
     df['rate_of_funding'] = rate_of_fundings
+
+    df.to_csv('data/donation_data/parsed-team-trees-10second.csv', header=True)
+
     return df
 
 
@@ -141,12 +151,11 @@ def fit_log_model_analysis(donation_df):
 
     fig, ax0 = plt.subplots()
 
-    color = 'tab:blue'
     ax0.set_xlabel('date')
-    ax0.set_ylabel('cumulative donations', color=color)
-    ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color=color)
-    ax0.tick_params(axis='y', labelcolor=color)
-    ax0.tick_params(axis='x', labelcolor=color)
+    ax0.set_ylabel('cumulative donations in $')
+    ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color="blue")
+    ax0.tick_params(axis='y')
+    ax0.tick_params(axis='x')
     ax0.axhline(20000000, label="20mil goal", color="yellow")
     ax0.legend(loc=1)
 
@@ -156,7 +165,7 @@ def fit_log_model_analysis(donation_df):
     ax1.axvline(small_x_data[-1], label="Boundary for prediction data", color="red")
     ax1.set_yticks([])
     ax1.set_xticks([])
-    ax1.plot(x_dates, logFunc(x_dates, *popt), label="Log model prediction based on donation data till 1-12-19")
+    ax1.plot(x_dates, logFunc(x_dates, *popt), label="Log model prediction based on donation data till 1-12-19", color="purple")
 
     ax1.legend(loc=0)
 
@@ -203,7 +212,7 @@ def catagorize_donation_amounts(donation_df):
 #get_correlation_data('data/twitter_data/count_sentiment_per_day_tweets.csv')
 #get_correlation_data()
 
-
+parse_donation_data()
 
 # fit_log_model_analysis(donation_df)
 # catagorize_donation_amounts(donation_df)
