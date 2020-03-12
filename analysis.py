@@ -141,12 +141,11 @@ def fit_log_model_analysis(donation_df):
 
     fig, ax0 = plt.subplots()
 
-    color = 'tab:blue'
     ax0.set_xlabel('date')
-    ax0.set_ylabel('cumulative donations', color=color)
-    ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color=color)
-    ax0.tick_params(axis='y', labelcolor=color)
-    ax0.tick_params(axis='x', labelcolor=color)
+    ax0.set_ylabel('cumulative donations in $')
+    ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color="blue")
+    ax0.tick_params(axis='y')
+    ax0.tick_params(axis='x')
     ax0.axhline(20000000, label="20mil goal", color="yellow")
     ax0.legend(loc=1)
 
@@ -156,7 +155,7 @@ def fit_log_model_analysis(donation_df):
     ax1.axvline(small_x_data[-1], label="Boundary for prediction data", color="red")
     ax1.set_yticks([])
     ax1.set_xticks([])
-    ax1.plot(x_dates, logFunc(x_dates, *popt), label="Log model prediction based on donation data till 1-12-19")
+    ax1.plot(x_dates, logFunc(x_dates, *popt), label="Log model prediction based on donation data till 1-12-19", color="purple")
 
     ax1.legend(loc=0)
 
