@@ -4,6 +4,7 @@ import seaborn as sns
 import numpy as np
 import matplotlib.dates as mdates
 from scipy.optimize import curve_fit
+import scipy.stats as stats
 
 sns.set()
 
@@ -172,6 +173,85 @@ def fit_log_model_analysis(donation_df):
     plt.show()
 
 
+def fix_intervals_for_data(df):
+    # 3120 hours in this range
+    START_RANGE = "2019-10-24"
+    END_RANGE = "2020-03-02"
+
+    # prep our arrays for filling
+    hourly_range = pd.date_range(START_RANGE, END_RANGE, periods=3120)
+    hourly_donation_data = np.zeros(len(hourly_range))
+
+    holder = 0
+    for index, row in df.iterrows():
+        time_stamp = row['date']
+        for i in range(holder, len(hourly_range)):
+            hour_gen = hourly_range[i]
+            if hour_gen > time_stamp:
+                holder = i-1
+                hourly_donation_data[i-1] = row['cumsum']
+                break
+
+
+    # Fill the rest of the data with the last entry, in other words no more summing
+    last_entry = np.where(hourly_donation_data == 0)[0][-1]
+    for i in range(last_entry, len(hourly_donation_data)):
+        hourly_donation_data[i] = hourly_donation_data[i-1]
+
+    df_1 = pd.DataFrame(hourly_donation_data.T).replace(to_replace=0, method='ffill')
+    return df_1.values.flatten() # after the zero fill return this df as flattened an numpy style
+
+
+def correlate_binned_data(top_donor_data, binned, bins):
+    TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999)
+
+    # Drop uneeded columns, only comparing the cumsum here
+    top_donor_data = top_donor_data.drop("donated_amount", axis=1)
+    top_donor_data = top_donor_data.drop("bin", axis=1)
+
+    top_donor_data_per_hour = fix_intervals_for_data(top_donor_data)
+    print("TOP DONE^")
+
+    # get correlations for binned groups
+    for i in range(1, len(bins)):
+        left = bins[i-1]
+        right = bins[i]
+        interval = pd.Interval(left=left, right=right)
+
+        data_to_comp = binned.get_group(interval)
+        data_to_comp = data_to_comp.drop("donated_amount", axis=1)
+        data_to_comp = data_to_comp.drop("bin", axis=1)
+        data_to_comp = fix_intervals_for_data(data_to_comp)
+
+        # Assuming top donor data is the most influential
+        print("Interval to compare with top-donors", interval)
+        corr = stats.pearsonr(top_donor_data_per_hour, data_to_comp)
+        print("Correlation", corr)
+
+
+def derivate_binned_data(binned, bins):
+    fig, ax = plt.subplots()
+    for i in range(1, len(bins)):
+        left = bins[i - 1]
+        right = bins[i]
+        interval = pd.Interval(left=left, right=right)
+
+        data_to_comp = binned.get_group(interval)
+        data_to_comp = data_to_comp.drop("donated_amount", axis=1)
+        data_to_comp = data_to_comp.drop("bin", axis=1)
+        data_to_comp = fix_intervals_for_data(data_to_comp)[75:2700]
+
+        derivative_of_data = []
+        for i in range(1, len(data_to_comp)):
+            new = data_to_comp[i]
+            old = data_to_comp[i-1]
+            # hourly derivative is always an hour spaced data scheme
+            derivative_of_data.append(new - old)
+        ax.plot(derivative_of_data, label="interval " + str(left) + " - " + str(right), alpha=0.2)
+    plt.legend()
+    plt.show()
+
+
 def catagorize_donation_amounts(donation_df):
     # pop the first 11 rows which are not per 10s
     SKIP = 11
@@ -197,13 +277,16 @@ def catagorize_donation_amounts(donation_df):
     TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999)
     top_donor_data = binned.get_group(TOP_DONORS_INTERVAL)
 
-
     for high_donation_date in top_donor_data['date']:
         plt.axvline(high_donation_date)
 
-    sns.lineplot(x="date", y="cumsum", hue="bin", data=merged)
-    plt.yscale('log')
-    plt.show()
+    ax = sns.lineplot(x="date", y="cumsum", hue="bin", data=merged, drawstyle="steps-pre")
+    ax.set(xlabel='Date', ylabel='Binned Cumulative Sum')
+    # plt.yscale('log')
+    # plt.show()
+
+    # correlate_binned_data(top_donor_data, binned, bins)
+    # derivate_binned_data(binned, bins)
 
 # # get data in raw form
 # tweet_df = get_tweet_data()
@@ -212,7 +295,7 @@ def catagorize_donation_amounts(donation_df):
 #get_correlation_data('data/twitter_data/count_sentiment_per_day_tweets.csv')
 #get_correlation_data()
 
-parse_donation_data()
+# parse_donation_data()
 
 # fit_log_model_analysis(donation_df)
 # catagorize_donation_amounts(donation_df)
