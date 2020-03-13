@@ -50,7 +50,6 @@ def pre_process_tweets(url):
 
     tweet_df = get_tweet_data(url)
 
-
     f = open(url, "r", encoding="utf8")
     tweets = list(f)
     list_of_tweets = []
@@ -284,7 +283,7 @@ if __name__ == '__main__':
         experiments = 1
 
         # default value of K for K-means
-        k = 21
+        k = 50
 
         # for every experiment 'e', run K-means
         for e in range(experiments):

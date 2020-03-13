@@ -1,6 +1,6 @@
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from analysis import get_tweet_data
+from analysis import get_tweet_data, get_correlation_data
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
@@ -60,12 +60,19 @@ def get_sentiments_trends(file):
     count_df.to_csv('data/twitter_data/count_sentiment_' + 'per_day_tweets.csv', header=True)
 
 
-tweet_df = get_tweet_data()
-get_sentiment(tweet_df)
-
-get_sentiments_trends('data/twitter_data/sentiment_of_tweets.csv')
-# df = pd.read_csv('data/twitter_data/count_sentiment_per_day_tweets.csv', delimiter=",", header=0)
+# tweet_df = get_tweet_data()
+# get_sentiment(tweet_df)
 #
-# df['n_positive'].plot()
-# df['n_negative'].plot()
-# plt.show()
+# get_sentiments_trends('data/twitter_data/sentiment_of_tweets.csv')
+
+get_correlation_data(file1='data/twitter_data/count_sentiment_per_day_tweets.csv', sentiment=True)
+
+df = pd.read_csv('data/twitter_data/count_sentiment_per_day_tweets.csv', delimiter=",", header=0)
+#
+df['n_positive'].plot()
+df['n_negative'].plot()
+df['neutral'].plot()
+plt.legend(['Positive', 'Negative', 'Neutral'])
+plt.xlabel('Time (days)', fontsize=18)
+plt.ylabel('Tweets (#)', fontsize=18)
+plt.show()

@@ -71,7 +71,7 @@ def calc_correlation(social_data, donation_data, begin_date, end_date, sentiment
     if not sentiment:
         correlation = np.corrcoef(social_data.loc[period_social]['count'], donation_data.loc[period_donation]['av_rate'])
     else:
-        correlation = np.corrcoef(social_data.loc[period_social]['n_positive'], donation_data.loc[period_donation]['av_rate'])
+        correlation = np.corrcoef(social_data.loc[period_social]['neutral'], donation_data.loc[period_donation]['av_rate'])
     return correlation
 
 
