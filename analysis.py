@@ -4,7 +4,6 @@ import seaborn as sns
 import numpy as np
 import matplotlib.dates as mdates
 from scipy.optimize import curve_fit
-import scipy.stats as stats
 
 sns.set()
 
@@ -192,27 +191,22 @@ def fix_intervals_for_data(df):
                 hourly_donation_data[i-1] = row['cumsum']
                 break
 
-
     # Fill the rest of the data with the last entry, in other words no more summing
     last_entry = np.where(hourly_donation_data == 0)[0][-1]
     for i in range(last_entry, len(hourly_donation_data)):
         hourly_donation_data[i] = hourly_donation_data[i-1]
 
     df_1 = pd.DataFrame(hourly_donation_data.T).replace(to_replace=0, method='ffill')
-    return df_1.values.flatten() # after the zero fill return this df as flattened an numpy style
+    return df_1.values.flatten()  # after the zero fill return this df as flattened an numpy style
 
 
 def correlate_binned_data(top_donor_data, binned, bins):
-    TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999)
-
-    # Drop uneeded columns, only comparing the cumsum here
+    # PREP TOP DONATORS
     top_donor_data = top_donor_data.drop("donated_amount", axis=1)
     top_donor_data = top_donor_data.drop("bin", axis=1)
-
     top_donor_data_per_hour = fix_intervals_for_data(top_donor_data)
-    print("TOP DONE^")
 
-    # get correlations for binned groups
+    # get and print correlations for binned groups
     for i in range(1, len(bins)):
         left = bins[i-1]
         right = bins[i]
@@ -225,7 +219,7 @@ def correlate_binned_data(top_donor_data, binned, bins):
 
         # Assuming top donor data is the most influential
         print("Interval to compare with top-donors", interval)
-        corr = stats.pearsonr(top_donor_data_per_hour, data_to_comp)
+        corr = np.corrcoef(top_donor_data_per_hour, data_to_comp)
         print("Correlation", corr)
 
 
