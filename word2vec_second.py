@@ -283,7 +283,7 @@ if __name__ == '__main__':
         experiments = 1
 
         # default value of K for K-means
-        k = 50
+        k = 25
 
         # for every experiment 'e', run K-means
         for e in range(experiments):
@@ -298,7 +298,7 @@ if __name__ == '__main__':
                 print(str(c+1) + ": ", str(len(clusters[c])) + " tweets")
                 # # to print tweets in a cluster
                 for t in range(len(clusters[c])):
-                    with open('clusterfile', 'a') as fp:
+                    with open('clusterfile_k=' + str(k), 'a') as fp:
                         wr = csv.writer(fp)
 
                         wr.writerow([c, (" ".join(clusters[c][t][0]))])

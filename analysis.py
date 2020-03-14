@@ -71,7 +71,7 @@ def calc_correlation(social_data, donation_data, begin_date, end_date, sentiment
     if not sentiment:
         correlation = np.corrcoef(social_data.loc[period_social]['count'], donation_data.loc[period_donation]['av_rate'])
     else:
-        correlation = np.corrcoef(social_data.loc[period_social]['neutral'], donation_data.loc[period_donation]['av_rate'])
+        correlation = np.corrcoef(social_data.loc[period_social]['n_negative'], donation_data.loc[period_donation]['av_rate'])
     return correlation
 
 
@@ -102,18 +102,22 @@ def plot_data(tweet_df, donation_df):
     plt.show()
 
 
-def get_correlation_data(file1='regular_twitter_data', file2='donation_rate_data', sentiment=False):
+def get_correlation_data(file1='regular_twitter_data', file2='donation_rate_data', time_unit='day', sentiment=False):
     if isinstance(file1, str):
-        if file1 == 'regular_twitter_data':
+        if file1 == 'regular_twitter_data' and time_unit == 'day':
             tweets_per_day = get_tweet_count_data('day')
+        elif file1 == 'regular_twitter_data' and time_unit == 'hour':
+            tweets_per_day = get_tweet_count_data('hour')
         else:
             tweets_per_day = pd.read_csv(file1, delimiter=",", header=0)
     else:
         tweets_per_day = file1
 
     if isinstance(file2, str):
-        if file2 == 'donation_rate_data':
+        if file2 == 'donation_rate_data' and time_unit == 'day':
             av_donation_rate_per_day = get_donation_rate_data('day')
+        elif file2 == 'donation_rate_data' and time_unit == 'hour':
+            av_donation_rate_per_day = get_donation_rate_data('hour')
         else:
             av_donation_rate_per_day = pd.read_csv(file2, delimiter=",", header=0)
     else:
