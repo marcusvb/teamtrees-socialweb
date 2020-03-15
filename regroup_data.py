@@ -119,12 +119,12 @@ def tree_donation_rate_per_unit(df, group_per_timeunit):
     return av_rate_df
 
 #tweet_df = get_tweet_data()
-donation_df = get_donation_data()
+# donation_df = get_donation_data()
 
 #count_df = tweet_count_per_unit(tweet_df, "hour")
-donation_rate_df = tree_donation_rate_per_unit(donation_df, 'hour')
+# donation_rate_df = tree_donation_rate_per_unit(donation_df, 'day')
 
 #count_df.plot(x='date', y='count')
-donation_rate_df.plot(x='date', y='av_rate')
+# donation_rate_df.plot(x='date', y='av_rate')
 
-plt.show()
+# plt.show()

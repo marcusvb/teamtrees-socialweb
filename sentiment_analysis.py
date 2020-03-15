@@ -1,6 +1,6 @@
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from analysis import get_tweet_data
+from analysis import get_tweet_data, get_correlation_data
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
@@ -26,7 +26,7 @@ def get_sentiment(tweet_df):
     sentiment_df.to_csv('data/twitter_data/sentiment_of_tweets.csv', header=True)
 
 
-def get_sentiments_trends(file):
+def get_sentiments_trends(file, group_by_unit):
     df = pd.read_csv(file, delimiter=",", header=0)
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
     # df['sentiment'] = df.apply(ast.literal_eval, columns=['sentiment'])
@@ -34,38 +34,75 @@ def get_sentiments_trends(file):
     # print(df['sentiment']['compound'])
     count_df = pd.DataFrame(columns=['date', 'count', 'n_positive', 'neutral', 'n_negative'])
 
-    for year in [2019, 2020]:
-        for month in range(1, 13):
-            for day in range(1, days_per_month[month - 1] + 1):
-                print(year, month, day)
-                count_df.loc[0 if pd.isnull(count_df.index.max()) else count_df.index.max() + 1] = \
-                    [pd.Period(str(year) + '-' + str(month) + '-' + str(day), 'D'),
-                     len(df.loc[(df['date'].dt.day == day) &
-                                (df['date'].dt.month == month) &
-                                (df['date'].dt.year == year)]),
-                     len(df.loc[(df['date'].dt.day == day) &
-                                (df['date'].dt.month == month) &
-                                (df['date'].dt.year == year) &
-                                (df['compound'] > 0)]),
-                     len(df.loc[(df['date'].dt.day == day) &
-                                (df['date'].dt.month == month) &
-                                (df['date'].dt.year == year) &
-                                (df['compound'] == 0)]),
-                     len(df.loc[(df['date'].dt.day == day) &
-                                (df['date'].dt.month == month) &
-                                (df['date'].dt.year == year) &
-                                (df['compound'] < 0)])
-                     ]
+    if group_by_unit == 'day':
+        for year in [2019, 2020]:
+            for month in range(1, 13):
+                for day in range(1, days_per_month[month - 1] + 1):
+                    print(year, month, day)
+                    count_df.loc[0 if pd.isnull(count_df.index.max()) else count_df.index.max() + 1] = \
+                        [pd.Period(str(year) + '-' + str(month) + '-' + str(day), 'D'),
+                         len(df.loc[(df['date'].dt.day == day) &
+                                    (df['date'].dt.month == month) &
+                                    (df['date'].dt.year == year)]),
+                         len(df.loc[(df['date'].dt.day == day) &
+                                    (df['date'].dt.month == month) &
+                                    (df['date'].dt.year == year) &
+                                    (df['compound'] > 0)]),
+                         len(df.loc[(df['date'].dt.day == day) &
+                                    (df['date'].dt.month == month) &
+                                    (df['date'].dt.year == year) &
+                                    (df['compound'] == 0)]),
+                         len(df.loc[(df['date'].dt.day == day) &
+                                    (df['date'].dt.month == month) &
+                                    (df['date'].dt.year == year) &
+                                    (df['compound'] < 0)])
+                         ]
+        count_df.to_csv('data/twitter_data/count_sentiment_' + 'per_day_tweets.csv', header=True)
 
-    count_df.to_csv('data/twitter_data/count_sentiment_' + 'per_day_tweets.csv', header=True)
+    if group_by_unit == 'hour':
+        for year in [2019, 2020]:
+            for month in range(1, 13):
+                for day in range(1, days_per_month[month - 1] + 1):
+                    for hour in range(0, 24):
+                        print(year, month, day)
+                        count_df.loc[0 if pd.isnull(count_df.index.max()) else count_df.index.max() + 1] = \
+                            [pd.Period(str(year) + '-' + str(month) + '-' + str(day) + ' ' + str(hour) + ":00", 'H'),
+                             len(df.loc[(df['date'].dt.day == day) &
+                                        (df['date'].dt.month == month) &
+                                        (df['date'].dt.year == year) &
+                                        (df['date'].dt.hour == hour)]),
+                             len(df.loc[(df['date'].dt.day == day) &
+                                        (df['date'].dt.month == month) &
+                                        (df['date'].dt.year == year) &
+                                        (df['date'].dt.hour == hour) &
+                                        (df['compound'] > 0)]),
+                             len(df.loc[(df['date'].dt.day == day) &
+                                        (df['date'].dt.month == month) &
+                                        (df['date'].dt.year == year) &
+                                        (df['date'].dt.hour == hour) &
+                                        (df['compound'] == 0)]),
+                             len(df.loc[(df['date'].dt.day == day) &
+                                        (df['date'].dt.month == month) &
+                                        (df['date'].dt.year == year) &
+                                        (df['date'].dt.hour == hour) &
+                                        (df['compound'] < 0)])
+                             ]
+        count_df.to_csv('data/twitter_data/count_sentiment_' + 'per_hour_tweets.csv', header=True)
 
 
-tweet_df = get_tweet_data()
-get_sentiment(tweet_df)
-
-get_sentiments_trends('data/twitter_data/sentiment_of_tweets.csv')
-# df = pd.read_csv('data/twitter_data/count_sentiment_per_day_tweets.csv', delimiter=",", header=0)
+# tweet_df = get_tweet_data()
+# get_sentiment(tweet_df)
 #
+# get_sentiments_trends('data/twitter_data/sentiment_of_tweets.csv', 'hour')
+
+get_correlation_data(file1='data/twitter_data/count_sentiment_per_hour_tweets.csv', time_unit='hour', sentiment=True)
+
+# df = pd.read_csv('data/twitter_data/count_sentiment_per_hour_tweets.csv', delimiter=",", header=0)
+# #
 # df['n_positive'].plot()
 # df['n_negative'].plot()
+# df['neutral'].plot()
+# plt.legend(['Positive', 'Negative', 'Neutral'])
+# plt.xlabel('Time (days)', fontsize=18)
+# plt.ylabel('Tweets (#)', fontsize=18)
 # plt.show()
