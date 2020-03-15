@@ -4,6 +4,7 @@ import seaborn as sns
 import numpy as np
 import matplotlib.dates as mdates
 from scipy.optimize import curve_fit
+import copy
 
 sns.set()
 
@@ -210,6 +211,9 @@ def correlate_binned_data(top_donor_data, binned, bins):
     top_donor_data = top_donor_data.drop("bin", axis=1)
     top_donor_data_per_hour = fix_intervals_for_data(top_donor_data)
 
+    corrs = []
+    hours_to_shift = 350
+
     # get and print correlations for binned groups
     for i in range(1, len(bins)):
         left = bins[i-1]
@@ -223,8 +227,43 @@ def correlate_binned_data(top_donor_data, binned, bins):
 
         # Assuming top donor data is the most influential
         print("Interval to compare with top-donors", interval)
-        corr = np.corrcoef(top_donor_data_per_hour, data_to_comp)
-        print("Correlation", corr)
+
+        corr_per_range = []
+        for i in range(-hours_to_shift, hours_to_shift):
+            data_to_comp_mod = copy.deepcopy(data_to_comp)
+            top_donor_data_per_hour_mod = copy.deepcopy(top_donor_data_per_hour)
+
+            if i > 0:
+                data_to_comp_mod = data_to_comp_mod[i:]
+                top_donor_data_per_hour_mod = top_donor_data_per_hour_mod[:-i]
+            elif i < 0:
+                data_to_comp_mod = data_to_comp_mod[:i]
+                top_donor_data_per_hour_mod = top_donor_data_per_hour_mod[-i:]
+            else:
+                pass # its 0
+            corr = np.corrcoef(top_donor_data_per_hour_mod, data_to_comp_mod)[0,1] # grab the compared correlation
+            corr_per_range.append(corr)
+
+        corrs.append((interval, corr_per_range)) # append tuple-> inteval, corrs over the hours
+
+    # init new plot
+    fig, ax = plt.subplots()
+    for data_brick in corrs:
+        interval = data_brick[0]
+        corrs_shifted = np.asarray(data_brick[1])[::-1][hours_to_shift:] # reverse for the previous logic, we cut the revsering of time because it's kinda meh
+        x = np.asarray(range(-hours_to_shift, hours_to_shift))[hours_to_shift:]
+        ax.plot(x, corrs_shifted, label="Interval: "+str(interval), alpha=0.5)
+
+
+        xmax = x[np.argmax(corrs_shifted)]
+        ymax = corrs_shifted.max()
+        ax.plot(xmax, ymax, marker="o", ls="", ms=3)
+
+    plt.ylabel("Correlation coefficient")
+    plt.xlabel("Hours shifted")
+    plt.legend()
+    plt.show()
+
 
 
 def derivate_binned_data(binned, bins):
@@ -246,6 +285,7 @@ def derivate_binned_data(binned, bins):
             # hourly derivative is always an hour spaced data scheme
             derivative_of_data.append(new - old)
         ax.plot(derivative_of_data, label="interval " + str(left) + " - " + str(right), alpha=0.2)
+    plt.yscale("log")
     plt.legend()
     plt.show()
 
@@ -274,16 +314,17 @@ def catagorize_donation_amounts(donation_df):
     # Get the donors in highest interval
     TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999)
     top_donor_data = binned.get_group(TOP_DONORS_INTERVAL)
-
-    for high_donation_date in top_donor_data['date']:
-        plt.axvline(high_donation_date)
+    
+    # UGLY v lines for displaying intervals
+    # for high_donation_date in top_donor_data['date']:
+    #     plt.axvline(high_donation_date)
 
     ax = sns.lineplot(x="date", y="cumsum", hue="bin", data=merged, drawstyle="steps-pre")
     ax.set(xlabel='Date', ylabel='Binned Cumulative Sum')
     # plt.yscale('log')
-    # plt.show()
+    plt.show()
 
-    # correlate_binned_data(top_donor_data, binned, bins)
+    correlate_binned_data(top_donor_data, binned, bins)
     # derivate_binned_data(binned, bins)
 
 # # get data in raw form
