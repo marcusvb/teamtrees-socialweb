@@ -207,38 +207,44 @@ def fix_intervals_for_data(df):
 
 def correlate_binned_data(top_donor_data, binned, bins):
     # PREP TOP DONATORS
+
+    print("TOP DONATION DF")
+    print(top_donor_data.head())
+
     top_donor_data = top_donor_data.drop("donated_amount", axis=1)
     top_donor_data = top_donor_data.drop("bin", axis=1)
     top_donor_data_per_hour = fix_intervals_for_data(top_donor_data)
 
     corrs = []
-    hours_to_shift = 350
+    hours_to_shift = 300
 
     # get and print correlations for binned groups
-    for i in range(1, len(bins)):
+    for i in range(1, len(bins)-1):
         left = bins[i-1]
         right = bins[i]
         interval = pd.Interval(left=left, right=right)
+        print("Interval to compare with top-donors", interval)
 
         data_to_comp = binned.get_group(interval)
+
+        print(data_to_comp.head())
         data_to_comp = data_to_comp.drop("donated_amount", axis=1)
         data_to_comp = data_to_comp.drop("bin", axis=1)
         data_to_comp = fix_intervals_for_data(data_to_comp)
 
         # Assuming top donor data is the most influential
-        print("Interval to compare with top-donors", interval)
 
         corr_per_range = []
         for i in range(-hours_to_shift, hours_to_shift):
+            # hours are actually reversed
             data_to_comp_mod = copy.deepcopy(data_to_comp)
             top_donor_data_per_hour_mod = copy.deepcopy(top_donor_data_per_hour)
-
             if i > 0:
-                data_to_comp_mod = data_to_comp_mod[i:]
                 top_donor_data_per_hour_mod = top_donor_data_per_hour_mod[:-i]
+                data_to_comp_mod = data_to_comp_mod[i:]
             elif i < 0:
-                data_to_comp_mod = data_to_comp_mod[:i]
                 top_donor_data_per_hour_mod = top_donor_data_per_hour_mod[-i:]
+                data_to_comp_mod = data_to_comp_mod[:i]
             else:
                 pass # its 0
             corr = np.corrcoef(top_donor_data_per_hour_mod, data_to_comp_mod)[0,1] # grab the compared correlation
@@ -250,11 +256,11 @@ def correlate_binned_data(top_donor_data, binned, bins):
     fig, ax = plt.subplots()
     for data_brick in corrs:
         interval = data_brick[0]
-        corrs_shifted = np.asarray(data_brick[1])[::-1][hours_to_shift:] # reverse for the previous logic, we cut the revsering of time because it's kinda meh
-        x = np.asarray(range(-hours_to_shift, hours_to_shift))[hours_to_shift:]
+        corrs_shifted = np.asarray(data_brick[1])
+
+        # reverse the hour amount as this is logical for the graph
+        x = np.asarray(range(-hours_to_shift, hours_to_shift)) * -1
         ax.plot(x, corrs_shifted, label="Interval: "+str(interval), alpha=0.5)
-
-
         xmax = x[np.argmax(corrs_shifted)]
         ymax = corrs_shifted.max()
         ax.plot(xmax, ymax, marker="o", ls="", ms=3)
@@ -329,7 +335,7 @@ def catagorize_donation_amounts(donation_df):
 
 # # get data in raw form
 # tweet_df = get_tweet_data()
-# donation_df = get_donation_data()
+donation_df = get_donation_data()
 
 #get_correlation_data('data/twitter_data/count_sentiment_per_day_tweets.csv')
 #get_correlation_data()
@@ -337,4 +343,4 @@ def catagorize_donation_amounts(donation_df):
 # parse_donation_data()
 
 # fit_log_model_analysis(donation_df)
-# catagorize_donation_amounts(donation_df)
+catagorize_donation_amounts(donation_df)
