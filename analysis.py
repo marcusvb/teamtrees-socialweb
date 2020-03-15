@@ -205,8 +205,30 @@ def fix_intervals_for_data(df):
     return df_1.values.flatten()  # after the zero fill return this df as flattened an numpy style
 
 
+def plot_hourly_runned_summed_data(binned, bins):
+    for i in range(1, len(bins)):
+        left = bins[i - 1]
+        right = bins[i]
+        interval = pd.Interval(left=left, right=right)
+        data = binned.get_group(interval)
+        data = data.drop("donated_amount", axis=1)
+        data = data.drop("bin", axis=1)
+        data = fix_intervals_for_data(data)
+
+        # get time
+        START_RANGE = "2019-10-24"
+        END_RANGE = "2020-03-02"
+        hourly_range = pd.date_range(START_RANGE, END_RANGE, periods=3120)
+
+        sns.lineplot(x=hourly_range, y=data, label=str(interval), drawstyle="steps-pre")
+    plt.ylabel("Binned Cumulative Sum Hourly")
+    plt.xlabel("Date")
+    plt.legend()
+    plt.show()
+
 def correlate_binned_data(top_donor_data, binned, bins):
     # PREP TOP DONATORS
+    plot_hourly_runned_summed_data(binned, bins)
 
     print("TOP DONATION DF")
     print(top_donor_data.head())
@@ -335,7 +357,7 @@ def catagorize_donation_amounts(donation_df):
 
 # # get data in raw form
 # tweet_df = get_tweet_data()
-donation_df = get_donation_data()
+# donation_df = get_donation_data()
 
 #get_correlation_data('data/twitter_data/count_sentiment_per_day_tweets.csv')
 #get_correlation_data()
@@ -343,4 +365,4 @@ donation_df = get_donation_data()
 # parse_donation_data()
 
 # fit_log_model_analysis(donation_df)
-catagorize_donation_amounts(donation_df)
+# catagorize_donation_amounts(donation_df)
