@@ -283,7 +283,7 @@ if __name__ == '__main__':
         experiments = 1
 
         # default value of K for K-means
-        k = 25
+        k = 30
 
         # for every experiment 'e', run K-means
         for e in range(experiments):

@@ -54,7 +54,7 @@ def tweet_count_per_unit(df, group_per_timeunit):
 
 
 def tree_donation_rate_per_unit(df, group_per_timeunit):
-    df = get_donation_data()
+    # df = get_donation_data()
     # df['rate_of_funding'] = df['rate_of_funding'].apply(lambda x: float(x.strip('/min')))
     print(df['rate_of_funding'].head())
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
@@ -114,12 +114,16 @@ def tree_donation_rate_per_unit(df, group_per_timeunit):
                         av_rate_df.loc[0 if pd.isnull(av_rate_df.index.max()) else av_rate_df.index.max() + 1] = \
                             [pd.Period(str(year) + '-' + str(month) + '-' + str(day) + ' ' + str(hour) + ":00", 'H'), mean]
 
-    av_rate_df.to_csv('data/donation_data/av_rate_' + 'per_' + group_per_timeunit + '_donations.csv', header=True)
+    av_rate_df.to_csv('data/donation_data/av_rate_' + 'per_' + group_per_timeunit + '_donations_merged.csv', header=True)
 
     return av_rate_df
 
 #tweet_df = get_tweet_data()
 # donation_df = get_donation_data()
+
+dft = pd.read_csv('data/donation_data/parsed-team-trees-10second-merged-20min-data.csv', header=0, delimiter=",")
+
+donation_rate_df = tree_donation_rate_per_unit(dft, 'hour')
 
 #count_df = tweet_count_per_unit(tweet_df, "hour")
 # donation_rate_df = tree_donation_rate_per_unit(donation_df, 'day')
