@@ -197,20 +197,22 @@ def fix_intervals_for_data(df):
                 break
 
     # Fill the rest of the data with the last entry, in other words no more summing
-    last_entry = np.where(hourly_donation_data == 0)[0][-1]
-    for i in range(last_entry, len(hourly_donation_data)):
-        hourly_donation_data[i] = hourly_donation_data[i-1]
+    final_entry = np.nonzero(hourly_donation_data)[0][-1]
+    hourly_donation_data[-1] = hourly_donation_data[final_entry]
+    df_1 = pd.DataFrame(hourly_donation_data.T).replace(to_replace=0, method='bfill')
 
-    df_1 = pd.DataFrame(hourly_donation_data.T).replace(to_replace=0, method='ffill')
     return df_1.values.flatten()  # after the zero fill return this df as flattened an numpy style
 
 
 def plot_hourly_runned_summed_data(binned, bins):
+    colors = ["red", "orange", "green", "blue"]
     for i in range(1, len(bins)):
         left = bins[i - 1]
         right = bins[i]
         interval = pd.Interval(left=left, right=right)
         data = binned.get_group(interval)
+
+        print("Interval", interval)
         data = data.drop("donated_amount", axis=1)
         data = data.drop("bin", axis=1)
         data = fix_intervals_for_data(data)
@@ -220,7 +222,7 @@ def plot_hourly_runned_summed_data(binned, bins):
         END_RANGE = "2020-03-02"
         hourly_range = pd.date_range(START_RANGE, END_RANGE, periods=3120)
 
-        sns.lineplot(x=hourly_range, y=data, label=str(interval), drawstyle="steps-pre")
+        sns.lineplot(x=hourly_range, y=data, label=str(interval), drawstyle="steps-pre", color=colors[i-1])
     plt.ylabel("Binned Cumulative Sum Hourly")
     plt.xlabel("Date")
     plt.legend()
