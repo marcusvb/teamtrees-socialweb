@@ -6,7 +6,7 @@ import matplotlib.dates as mdates
 from scipy.optimize import curve_fit
 import copy
 
-sns.set()
+sns.set(font_scale=1)
 
 # pd.set_option('display.max_colwidth', -1)
 # pd.set_option('display.max_rows', 500)
@@ -157,7 +157,7 @@ def fit_log_model_analysis(donation_df):
     fig, ax0 = plt.subplots()
 
     ax0.set_xlabel('date')
-    ax0.set_ylabel('cumulative donations in $')
+    ax0.set_ylabel('USD donated')
     ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color="blue")
     ax0.tick_params(axis='y')
     ax0.tick_params(axis='x')
@@ -223,9 +223,10 @@ def plot_hourly_runned_summed_data(binned, bins):
         hourly_range = pd.date_range(START_RANGE, END_RANGE, periods=3120)
 
         sns.lineplot(x=hourly_range, y=data, label=str(interval), drawstyle="steps-pre", color=colors[i-1])
-    plt.ylabel("Binned Cumulative Sum Hourly")
+    plt.ylabel("USD Donated")
     plt.xlabel("Date")
     plt.legend()
+    plt.legend(loc='upper left', labels=['Low donors', 'Medium donors', 'Large donors', 'Biggest donors'])
     plt.show()
 
 def correlate_binned_data(top_donor_data, binned, bins):
@@ -291,7 +292,8 @@ def correlate_binned_data(top_donor_data, binned, bins):
 
     plt.ylabel("Correlation coefficient")
     plt.xlabel("Hours shifted")
-    plt.legend()
+    plt.legend(loc='upper left', labels=['Low donors', 'Peak correlation: Low donors', 'Medium donors', 'Peak correlation: medium donors', 'Large donors', 'Peak correlation: Large donors'])
+    # plt.legend()
     plt.show()
 
 
@@ -316,7 +318,9 @@ def derivate_binned_data(binned, bins):
             derivative_of_data.append(new - old)
         ax.plot(derivative_of_data, label="interval " + str(left) + " - " + str(right), alpha=0.2)
     plt.yscale("log")
-    plt.legend()
+    plt.legend(loc='upper left', labels=['Biggest donors', 'Medium donors', 'Large donors','Smallest donors'])
+    plt.ylabel("USD donated")
+    # plt.legend()
     plt.show()
 
 
@@ -351,7 +355,9 @@ def catagorize_donation_amounts(donation_df):
 
     ax = sns.lineplot(x="date", y="cumsum", hue="bin", data=merged, drawstyle="steps-pre")
     ax.set(xlabel='Date', ylabel='Binned Cumulative Sum')
+    plt.legend(loc='upper left', labels=['Biggest donors', 'Medium donors', 'Large donors','Smallest donors'])
     # plt.yscale('log')
+    plt.ylabel("USD donated")
     plt.show()
 
     correlate_binned_data(top_donor_data, binned, bins)
