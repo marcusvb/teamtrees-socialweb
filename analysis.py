@@ -154,8 +154,10 @@ def fit_log_model_analysis(donation_df):
     small_y_data = y_data[0:30500]
     popt, _ = curve_fit(logFunc, small_x_data, small_y_data)
 
+    """
+    Log plot
+    """
     fig, ax0 = plt.subplots()
-
     ax0.set_xlabel('date')
     ax0.set_ylabel('USD donated')
     ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color="blue")
@@ -336,6 +338,52 @@ def catagorize_donation_amounts(donation_df):
     donation_data_delta = donation_data_delta.iloc[SKIP:]['amount']
 
     merged = pd.concat([data_dates, donation_data_delta], axis=1, keys=['date', 'donated_amount'])
+
+    """
+    Full
+    """
+    plt.hist(np.abs(merged['donated_amount']), bins=500, log=True)
+    plt.yscale('log')
+    plt.xlim(left=0)
+    plt.xlabel("Amount donated in USD")
+    plt.ylabel("Frequency")
+    plt.axvline(50000, color='k', linestyle='dashed', label="$50000", alpha=0.5)
+    plt.legend()
+    plt.show()
+
+    return
+
+    """
+    MEDIUM - HIGH - Histogram of donation amounts
+    """
+    plt.hist(np.abs(merged['donated_amount']), bins=10000, log=True)
+    plt.yscale('log')
+    plt.xlim(left=0, right=50000)
+    plt.xlabel("Amount donated in USD")
+    plt.ylabel("Frequency")
+    plt.axvline(5000, color='k', linestyle='dashed', label="$5000", alpha=0.5)
+    plt.axvline(100, color='r', linestyle='dashed', label="$100", alpha=0.5)
+    plt.legend()
+    plt.show()
+
+    """
+    LOW BOUND HIST
+    """
+
+    merged = merged[merged['donated_amount'] < 300]
+    plt.hist(merged['donated_amount'], bins=2000)
+    plt.yscale('log')
+    plt.xlim(left=0, right=300)
+    plt.xlabel("Amount donated in USD")
+    plt.ylabel("Frequency")
+    # plt.axvline(5000, color='k', linestyle='dashed', label="$5000", alpha=0.5)
+    plt.axvline(100, color='r', linestyle='dashed', label="$100", alpha=0.5)
+    plt.legend()
+    plt.show()
+
+    """
+    BINNED DONATIONS
+    """
 
     # Bin the donations
     merged['bin'] = pd.cut(x=merged['donated_amount'], bins=bins)
