@@ -351,8 +351,6 @@ def catagorize_donation_amounts(donation_df):
     plt.legend()
     plt.show()
 
-    return
-
     """
     MEDIUM - HIGH - Histogram of donation amounts
     """
