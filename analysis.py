@@ -158,8 +158,8 @@ def fit_log_model_analysis(donation_df):
     Log plot
     """
     fig, ax0 = plt.subplots()
-    ax0.set_xlabel('date')
-    ax0.set_ylabel('USD donated')
+    ax0.set_xlabel('date', fontsize=20)
+    ax0.set_ylabel('USD donated', fontsize=20)
     ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color="blue")
     ax0.tick_params(axis='y')
     ax0.tick_params(axis='x')
@@ -349,8 +349,8 @@ def catagorize_donation_amounts(donation_df):
     plt.hist(np.abs(merged['donated_amount']), bins=500, log=True)
     plt.yscale('log')
     plt.xlim(left=0)
-    plt.xlabel("Amount donated in USD")
-    plt.ylabel("Frequency")
+    plt.xlabel("Amount donated in USD", fontsize=20)
+    plt.ylabel("Frequency", fontsize=20)
     plt.axvline(50000, color='k', linestyle='dashed', label="$50000", alpha=0.5)
     plt.legend()
     plt.show()
@@ -361,10 +361,11 @@ def catagorize_donation_amounts(donation_df):
     plt.hist(np.abs(merged['donated_amount']), bins=10000, log=True)
     plt.yscale('log')
     plt.xlim(left=0, right=50000)
-    plt.xlabel("Amount donated in USD")
-    plt.ylabel("Frequency")
+    plt.xlabel("Amount donated in USD", fontsize=20)
+    plt.ylabel("Frequency", fontsize=20)
     plt.axvline(5000, color='k', linestyle='dashed', label="$5000", alpha=0.5)
     plt.axvline(100, color='r', linestyle='dashed', label="$100", alpha=0.5)
+    plt.tick_params(axis="both", which='major', labelsize=15)
     plt.legend()
     plt.show()
 
@@ -376,8 +377,8 @@ def catagorize_donation_amounts(donation_df):
     plt.hist(merged['donated_amount'], bins=2000)
     plt.yscale('log')
     plt.xlim(left=0, right=300)
-    plt.xlabel("Amount donated in USD")
-    plt.ylabel("Frequency")
+    plt.xlabel("Amount donated in USD", fontsize=20)
+    plt.ylabel("Frequency", fontsize=20)
     plt.axvline(100, color='r', linestyle='dashed', label="$100", alpha=0.5)
     plt.legend()
     plt.show()
@@ -386,6 +387,7 @@ def catagorize_donation_amounts(donation_df):
     BINNED DONATIONS
     """
 
+    merged = pd.concat([data_dates, donation_data_delta], axis=1, keys=['date', 'donated_amount'])
     # Bin the donations
     merged['bin'] = pd.cut(x=merged['donated_amount'], bins=bins)
     # cumsum the bins
