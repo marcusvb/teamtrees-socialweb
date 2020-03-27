@@ -158,13 +158,17 @@ def fit_log_model_analysis(donation_df):
     Log plot
     """
     fig, ax0 = plt.subplots()
-    ax0.set_xlabel('date', fontsize=20)
-    ax0.set_ylabel('USD donated', fontsize=20)
+    ax0.set_xlabel('date')
+    ax0.set_ylabel('USD donated')
     ax0.plot(donation_df['date'], donation_df['amount'].cumsum(), linestyle="--", label="real data", color="blue")
     ax0.tick_params(axis='y')
     ax0.tick_params(axis='x')
     ax0.axhline(20000000, label="20mil goal", color="yellow")
-    ax0.legend(loc=1)
+    ax0.legend(loc=1, prop={'size': 20})
+
+    ax0.xaxis.get_label().set_fontsize(30)
+    ax0.yaxis.get_label().set_fontsize(30)
+    ax0.tick_params(labelsize=17)
 
     # Dual graphs on 1 axis
     ax1 = ax0.twinx().twiny()
@@ -174,7 +178,7 @@ def fit_log_model_analysis(donation_df):
     ax1.set_xticks([])
     ax1.plot(x_dates, logFunc(x_dates, *popt), label="Log model prediction based on donation data till 1-12-19", color="purple")
 
-    ax1.legend(loc=0)
+    ax1.legend(loc=0, prop={'size':20})
 
     plt.show()
 
@@ -225,10 +229,11 @@ def plot_hourly_runned_summed_data(binned, bins):
         hourly_range = pd.date_range(START_RANGE, END_RANGE, periods=3120)
 
         sns.lineplot(x=hourly_range, y=data, label=str(interval), drawstyle="steps-pre", color=colors[i-1])
-    plt.ylabel("USD Donated")
-    plt.xlabel("Date")
-    plt.legend()
-    plt.legend(loc='upper left', labels=['Low donors', 'Medium donors', 'Large donors', 'Biggest donors'])
+
+    plt.ylabel("USD Donated", fontsize=30)
+    plt.xlabel("Date", fontsize=30)
+    plt.legend(loc='upper left', labels=['Low donors', 'Medium donors', 'Large donors', 'Biggest donors'], prop={'size': 20})
+    plt.yticks(fontsize=15)
     plt.show()
 
 def correlate_binned_data(top_donor_data, binned, bins):
@@ -296,10 +301,11 @@ def correlate_binned_data(top_donor_data, binned, bins):
 
         ax.plot(xmax, ymax, marker="o", ls="", ms=3)
 
-    plt.ylabel("Correlation coefficient")
-    plt.xlabel("Hours shifted")
-    plt.legend(loc='upper left', labels=['Low donors', 'Peak correlation: Low donors', 'Medium donors', 'Peak correlation: medium donors', 'Large donors', 'Peak correlation: Large donors'])
-    # plt.legend()
+    plt.ylabel("Correlation coefficient", fontsize=30)
+    plt.xlabel("Hours shifted", fontsize=30)
+    plt.legend(loc='upper left', labels=['Low donors', 'Peak correlation: Low donors', 'Medium donors', 'Peak correlation: medium donors', 'Large donors', 'Peak correlation: Large donors'], prop={'size': 20})
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
     plt.show()
 
 
@@ -349,11 +355,14 @@ def catagorize_donation_amounts(donation_df):
     plt.hist(np.abs(merged['donated_amount']), bins=500, log=True)
     plt.yscale('log')
     plt.xlim(left=0)
-    plt.xlabel("Amount donated in USD", fontsize=20)
-    plt.ylabel("Frequency", fontsize=20)
+    plt.xlabel("Amount donated in USD", fontsize=30)
+    plt.ylabel("Frequency", fontsize=30)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
     plt.axvline(50000, color='k', linestyle='dashed', label="$50000", alpha=0.5)
-    plt.legend()
+    plt.legend(prop={'size': 20})
     plt.show()
+
 
     """
     MEDIUM - HIGH - Histogram of donation amounts
@@ -361,12 +370,13 @@ def catagorize_donation_amounts(donation_df):
     plt.hist(np.abs(merged['donated_amount']), bins=10000, log=True)
     plt.yscale('log')
     plt.xlim(left=0, right=50000)
-    plt.xlabel("Amount donated in USD", fontsize=20)
-    plt.ylabel("Frequency", fontsize=20)
+    plt.xlabel("Amount donated in USD", fontsize=30)
+    plt.ylabel("Frequency", fontsize=30)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
     plt.axvline(5000, color='k', linestyle='dashed', label="$5000", alpha=0.5)
     plt.axvline(100, color='r', linestyle='dashed', label="$100", alpha=0.5)
-    plt.tick_params(axis="both", which='major', labelsize=15)
-    plt.legend()
+    plt.legend(prop={'size': 20})
     plt.show()
 
     """
@@ -377,10 +387,12 @@ def catagorize_donation_amounts(donation_df):
     plt.hist(merged['donated_amount'], bins=2000)
     plt.yscale('log')
     plt.xlim(left=0, right=300)
-    plt.xlabel("Amount donated in USD", fontsize=20)
-    plt.ylabel("Frequency", fontsize=20)
+    plt.xlabel("Amount donated in USD", fontsize=30)
+    plt.ylabel("Frequency", fontsize=30)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
     plt.axvline(100, color='r', linestyle='dashed', label="$100", alpha=0.5)
-    plt.legend()
+    plt.legend(prop={'size': 20})
     plt.show()
 
     """
@@ -399,16 +411,15 @@ def catagorize_donation_amounts(donation_df):
     # Get the donors in highest interval
     TOP_DONORS_INTERVAL = pd.Interval(left=50000, right=9999999999)
     top_donor_data = binned.get_group(TOP_DONORS_INTERVAL)
-    
-    # UGLY v lines for displaying intervals
-    # for high_donation_date in top_donor_data['date']:
-    #     plt.axvline(high_donation_date)
 
     ax = sns.lineplot(x="date", y="cumsum", hue="bin", data=merged, drawstyle="steps-pre")
     ax.set(xlabel='Date', ylabel='Binned Cumulative Sum')
-    plt.legend(loc='upper left', labels=['Biggest donors', 'Medium donors', 'Large donors','Smallest donors'])
+    ax.xaxis.get_label().set_fontsize(30)
+    ax.yaxis.get_label().set_fontsize(30)
+    ax.tick_params(labelsize=17)
+    plt.legend(loc='upper left', labels=['Biggest donors', 'Medium donors', 'Large donors','Smallest donors'], prop={'size': 20})
     # plt.yscale('log')
-    plt.ylabel("USD donated")
+    plt.ylabel("USD donated", fontsize=30)
     plt.show()
 
     correlate_binned_data(top_donor_data, binned, bins)
