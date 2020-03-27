@@ -290,6 +290,10 @@ def correlate_binned_data(top_donor_data, binned, bins):
         ax.plot(x, corrs_shifted, label="Interval: "+str(interval), alpha=0.5)
         xmax = x[np.argmax(corrs_shifted)]
         ymax = corrs_shifted.max()
+
+        print("Max correlation coefficients")
+        print(xmax, ymax, interval)
+
         ax.plot(xmax, ymax, marker="o", ls="", ms=3)
 
     plt.ylabel("Correlation coefficient")
@@ -374,7 +378,6 @@ def catagorize_donation_amounts(donation_df):
     plt.xlim(left=0, right=300)
     plt.xlabel("Amount donated in USD")
     plt.ylabel("Frequency")
-    # plt.axvline(5000, color='k', linestyle='dashed', label="$5000", alpha=0.5)
     plt.axvline(100, color='r', linestyle='dashed', label="$100", alpha=0.5)
     plt.legend()
     plt.show()
