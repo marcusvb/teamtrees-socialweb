@@ -4,12 +4,14 @@ from analysis import get_tweet_data, get_correlation_data
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
+import ast
+
 
 days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-import ast
 
 vader = SentimentIntensityAnalyzer()
 
+# gets sentiment of all the tweets and creates a list
 def get_sentiment(tweet_df):
     tweet_date = tweet_df['date']
     tweet_text = tweet_df['text'].apply(lambda x: str(x))
@@ -26,6 +28,7 @@ def get_sentiment(tweet_df):
     sentiment_df.to_csv('data/twitter_data/sentiment_of_tweets.csv', header=True)
 
 
+# regroup the sentiment data
 def get_sentiments_trends(file, group_by_unit):
     df = pd.read_csv(file, delimiter=",", header=0)
     df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
@@ -34,6 +37,7 @@ def get_sentiments_trends(file, group_by_unit):
     # print(df['sentiment']['compound'])
     count_df = pd.DataFrame(columns=['date', 'count', 'n_positive', 'neutral', 'n_negative'])
 
+    # groups sentiment by the day
     if group_by_unit == 'day':
         for year in [2019, 2020]:
             for month in range(1, 13):
@@ -59,6 +63,7 @@ def get_sentiments_trends(file, group_by_unit):
                          ]
         count_df.to_csv('data/twitter_data/count_sentiment_' + 'per_day_tweets.csv', header=True)
 
+    # groups sentiment data by the hour
     if group_by_unit == 'hour':
         for year in [2019, 2020]:
             for month in range(1, 13):
@@ -87,6 +92,7 @@ def get_sentiments_trends(file, group_by_unit):
                                         (df['date'].dt.hour == hour) &
                                         (df['compound'] < 0)])
                              ]
+
         count_df.to_csv('data/twitter_data/count_sentiment_' + 'per_hour_tweets.csv', header=True)
 
 

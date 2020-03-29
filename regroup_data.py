@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
+
+# groups the tweet data set per time unit
 def tweet_count_per_unit(df, group_per_timeunit):
     df.drop(["retweets", "favorites",  "text", "geo", "mentions", "hashtags", "id", "permalink"], axis=1)
     count_df = pd.DataFrame(columns=['date', 'count'])
@@ -26,7 +28,7 @@ def tweet_count_per_unit(df, group_per_timeunit):
             for month in range(1, 12):
                 print(year, month)
                 count_df.loc[0 if pd.isnull(count_df.index.max()) else count_df.index.max() + 1] = \
-                    [pd.Period(str(year) +'-'+ str(month), 'M'), len(df.loc[(df['date'].dt.month == month) &
+                    [pd.Period(str(year) + '-' + str(month), 'M'), len(df.loc[(df['date'].dt.month == month) &
                                                                     (df['date'].dt.year == year)])]
 
     if group_per_timeunit == "year":
@@ -123,7 +125,7 @@ def tree_donation_rate_per_unit(df, group_per_timeunit):
 
 dft = pd.read_csv('data/donation_data/parsed-team-trees-10second-merged-20min-data.csv', header=0, delimiter=",")
 
-donation_rate_df = tree_donation_rate_per_unit(dft, 'hour')
+donation_rate_df = tree_donation_rate_per_unit(dft, 'day')
 
 #count_df = tweet_count_per_unit(tweet_df, "hour")
 # donation_rate_df = tree_donation_rate_per_unit(donation_df, 'day')
